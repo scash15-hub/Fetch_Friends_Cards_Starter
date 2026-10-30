@@ -20,25 +20,47 @@ function loadFriends() {
   statusMessage.classList.remove("error");
   statusMessage.textContent = "Loading friends...";
 
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", "friends.json");
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
+  fetch("friends.json")
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("response not OK");
+      }
+      return response.json();
+    })
+    .then(friends => {
+      renderFriends(friends);
+    })
+    .catch(error => {
+      if (error instanceof SyntaxError) {
+        showDataError(error);
+      } else {
+        showLoadError();
+      }
+    });
+}
+
+
+
+async function loadFriends() {
       try {
-        const friends = JSON.parse(xhr.responseText);
+        const response = await fetch("friends.json");
+        if (!response.ok) {
+          throw new Error("response not OK");
+        }
+        const friends = await response.json();
         renderFriends(friends);
       } catch (error) {
-        showDataError(error);
+        showLoadError();
       }
-    } else {
-      showLoadError();
     }
-  };
 
-  xhr.onerror = showLoadError;
-  xhr.send();
-}
+    // A 404 error requires a response.ok check because the fetch() API does not reject its promise on HTTP error status codes
+    
+
+//   xhr.onerror = showLoadError; //onerror
+//   xhr.send(); //send
+// }
 
 // -------------------------------------------------------------
 // renderFriends: turns the array into cards. Do not change it for this lesson.
